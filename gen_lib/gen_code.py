@@ -41,14 +41,14 @@ def gen_xml():
     def get_result_map():
         node = etree.Element("resultMap")
         node.set("id", result_map_id)
-        node.set("class", domain_object_name)
+        node.set("type", domain_object_name)
         for field_info in table_field_list:
             column_name = field_info.field_name
             jdbc_type = field_info.field_type
             # property_name = get_java_like_string(column_name)
             child_node = etree.Element("result")
             child_node.set("column", column_name)
-            child_node.set("jdbcType", jdbc_type)
+            # child_node.set("jdbcType", jdbc_type)
             child_node.set("property", field_info.property)
             node.append(child_node)
         return node
@@ -67,11 +67,11 @@ def gen_xml():
 
         node = etree.Element("select")
         node.set("id", 'select')
-        node.set("parameterClass", type_map[pri_key_info.field_type])
+        node.set("parameterType", type_map[pri_key_info.field_type])
         node.set("resultMap", result_map_id)
         node.text = '\n    SELECT \n    '
         include_node = etree.Element("include", refid="all_column_list")
-        include_node.tail = "\n    FROM %s WHERE %s = #(%s)\n  " \
+        include_node.tail = "\n    FROM %s WHERE %s = #{%s}\n  " \
                             % (table_name, pri_key_info.field_name, get_java_like_string(pri_key_info.field_name))
         node.append(include_node)
         return node
@@ -100,7 +100,7 @@ def gen_xml():
         for item in table_field_list:
             ifEle = etree.Element("if")
             ifEle.set("test", item.property + "!=null")
-            ifEle.text = "#{%s},"% item.field_name
+            ifEle.text = "#{%s},"% item.property
             trim.append(ifEle)
 
         return node
